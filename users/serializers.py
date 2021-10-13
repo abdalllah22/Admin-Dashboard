@@ -1,19 +1,46 @@
 from rest_framework import serializers
 
-from .models import User
+from .models import User, Permission, Role
+
+class PermissionSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Permission
+        fields = '__all__'
+
+class PermissionRelatedField(serializers.StringRelatedField):
+    def to_representation(self, value):
+        return PermissionSerializer(value).data
+    
+    def to_internal_value(self, data):
+        return data
+    
 
 
+
+class RoleSerializer(serializers.ModelSerializer):
+    permissions = PermissionRelatedField(many=True)
+    
+    class Meta:
+        model = Role
+        fields = '__all__' 
+    
+    def create(self, validated_data):
+        permissions = validated_data.pop('permissions', None)
+        instance = self.Meta.model(**validated_data)
+        instance.save()
+        instance.permissions.add(*permissions)
+        instance.save()
+        return instance
 
 class UserSerializer(serializers.ModelSerializer):
-    # confirm_password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
-    
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name','email' ,'password']
         extra_kwargs = {
             'password': {
                 'write_only':True,
-                # 'style': {'input_type':'password'}
+                'style': {'input_type':'password'}
             }
         }
 
@@ -24,3 +51,5 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance 
+
+
