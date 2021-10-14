@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (register, login, logout ,
                     AuthenticatedUser, PermissionAPIView,
-                    RoleViewSet)
+                    RoleViewSet, UserGenericAPIView,
+                    ProfileInfoAPIView, ProfilePasswordAPIView)
 
 urlpatterns = [
     path('register', register ),
@@ -18,5 +19,9 @@ urlpatterns = [
         'put': 'update',
         'delete': 'destroy'
     })),
+    path('users', UserGenericAPIView.as_view()),
+    path('users/<str:pk>', UserGenericAPIView.as_view()),
+    path('users/info', ProfileInfoAPIView.as_view()),
+    path('users/password', ProfilePasswordAPIView.as_view()),
 ]
 
