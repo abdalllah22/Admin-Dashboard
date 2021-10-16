@@ -10,6 +10,7 @@ from .models import User, Permission, Role
 from .serializers import UserSerializer, PermissionSerializer, RoleSerializer
 from .authentication import generate_access_token, JWTAuthentication
 from admin.pagination import CustomPagination
+from .permissions import ViewPermissions
 # Create your views here.
 
 @api_view(['POST'])
@@ -82,8 +83,9 @@ class PermissionAPIView(APIView):
 
 class RoleViewSet(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication,]
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [IsAuthenticated & ViewPermissions]
+    permission_object = 'roles'
+
     def list(self,request):
         roles = Role.objects.all()
         serializer = RoleSerializer(roles, many=True)
@@ -127,7 +129,7 @@ class UserGenericAPIView(
     mixins.UpdateModelMixin, mixins.DestroyModelMixin ):
     
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated ]
+    permission_classes = [IsAuthenticated & ViewPermissions]
     permission_object = 'users'
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -174,7 +176,6 @@ class ProfileInfoAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-
 
 class ProfilePasswordAPIView(APIView):
     authentication_classes = [JWTAuthentication]
